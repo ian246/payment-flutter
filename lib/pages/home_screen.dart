@@ -1,9 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:payment_flutter/components/widget_card.dart';
+import 'package:payment_flutter/data/repository.dart';
+import 'package:payment_flutter/models/model.dart';
+import 'package:payment_flutter/pages/payment_history_screen.dart';
+import 'package:payment_flutter/services/payment_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,116 +13,82 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, dynamic>? paymentIntent;
-
+  final PaymentService _paymentService = PaymentService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Flutter - Payment Aplication")),
-      body: Center(
-        child: TextButton(
-          onPressed: () async {
-            await makePayment();
-          },
-          child: const Text("MakePayment"),
+      appBar: AppBar(
+        title: const Text("Escolha seu Pacote"),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
+      drawer: buildDrawer(context),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text(
+              'Selecione o pacote ideal para você',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ...PackageRepository.packages.map(
+              (package) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: PackageCard(
+                  package: package,
+                  onPressed: () => _handlePackageSelection(package, context),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> makePayment() async {
-    try {
-      paymentIntent = await createPaymentIntent('100', 'EUR');
-      await Stripe.instance
-          .initPaymentSheet(
-            paymentSheetParameters: SetupPaymentSheetParameters(
-              paymentIntentClientSecret: paymentIntent!['client_secret'],
-              merchantDisplayName: 'Ikay',
+  Widget buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.deepPurple),
+            child: Text(
+              'Menu',
+              style: TextStyle(color: Colors.white, fontSize: 24),
             ),
-          )
-          .then((value) {});
-
-      displayPaymentSheet();
-    } catch (err) {
-      throw Exception(err);
-    }
-  }
-
-  displayPaymentSheet() async {
-    try {
-      await Stripe.instance
-          .presentPaymentSheet()
-          .then((value) {
-            showDialog(
-              context: context,
-              builder: (_) => const AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: 100),
-                    SizedBox(height: 10),
-                    Text('Payment Successful!'),
-                  ],
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Pacotes'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.payment),
+            title: const Text('Histórico de Pagamentos'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PaymentHistoryScreen(),
                 ),
-              ),
-            );
-            paymentIntent = null;
-          })
-          .onError((error, stackTrace) {
-            throw Exception(error);
-          });
-    } on StripeException catch (err) {
-      print("error is ---> $err");
-      const AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.cancel, color: Colors.red),
-                Text('Payment Failed  '),
-              ],
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      print('$e');
-    }
-  }
-}
-
-createPaymentIntent(String amount, String currency) async {
-    final secretKey = dotenv.env['STRIPE_SECRET_KEY'];
-  final baseurl = dotenv.env['DATABASE_URL'];
-  if(baseurl == null) {
-    throw Exception('Url incorrect');
-  }
-
-  calculetAmount(String amount) {
-    final calculatedAmout = (int.parse(amount)) * 100;
-    return calculatedAmout.toString();
-  }
-
-  Map<String, dynamic> body = {
-    'amount': calculetAmount(amount),
-    'currency': currency, // Corrigido aqui
-  };
-
-  try {
-    var response = await http.post(
-      Uri.parse(baseurl),
-    
-
-      headers: {
-        'Authorization': 'Bearer $secretKey',
-        'Content-type': 'application/x-www-form-urlencoded',
-      },
-      body: body,
+              );
+            },
+          ),
+        ],
+      ),
     );
-    return json.decode(response.body);
-  } catch (err) {
-    throw Exception(err.toString());
+  }
+
+  Future<void> _handlePackageSelection(
+    PaymentPackage package,
+    BuildContext context,
+  ) async {
+    await _paymentService.handlePackageSelection(package, context);
   }
 }
