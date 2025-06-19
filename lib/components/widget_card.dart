@@ -26,7 +26,7 @@ class PackageCard extends StatelessWidget {
           end: Alignment.bottomRight,
         );
         borderColor = Colors.black;
-        shadowColors = [Colors.grey.withOpacity(0.8), Colors.black.withOpacity(0.3)];
+        shadowColors = [Colors.grey.withAlpha(204), Colors.black.withAlpha(77)];
         break;
       case PackageSize.medium:
         gradient = const LinearGradient(
@@ -35,7 +35,10 @@ class PackageCard extends StatelessWidget {
           end: Alignment.bottomRight,
         );
         borderColor = Colors.deepPurple.shade300;
-        shadowColors = [Colors.deepPurple.withOpacity(0.5), Colors.indigo.withOpacity(0.3)];
+        shadowColors = [
+          Colors.deepPurple.withAlpha(128),
+          Colors.indigo.withAlpha(77),
+        ];
         break;
       case PackageSize.large:
         gradient = const LinearGradient(
@@ -44,29 +47,14 @@ class PackageCard extends StatelessWidget {
           end: Alignment.bottomRight,
         );
         borderColor = Colors.tealAccent.shade400;
-        shadowColors = [Colors.deepPurple.withOpacity(0.5), Colors.teal.withOpacity(0.3)];
+        shadowColors = [
+          Colors.deepPurple.withAlpha(128),
+          Colors.teal.withAlpha(77),
+        ];
         break;
     }
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColors[0],
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: shadowColors[1],
-            blurRadius: 5,
-            spreadRadius: 1,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -94,7 +82,7 @@ class PackageCard extends StatelessWidget {
                   Text(
                     package.title,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -102,7 +90,7 @@ class PackageCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               // Descrição
               Text(
                 package.description,
@@ -113,7 +101,7 @@ class PackageCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Rodapé com preço e botão
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,13 +111,10 @@ class PackageCard extends StatelessWidget {
                     children: [
                       const Text(
                         'Preço',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.white70),
                       ),
                       Text(
-                        '\$${package.price.toStringAsFixed(2)}',
+                        'R\$${package.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -141,14 +126,16 @@ class PackageCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onPressed,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withAlpha(51),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                        side: BorderSide(color: Colors.white.withAlpha(128)),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     child: const Text(
                       'Assinar',

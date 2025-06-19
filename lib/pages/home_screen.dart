@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:payment_flutter/components/widget_card.dart';
-import 'package:payment_flutter/data/repository.dart';
 import 'package:payment_flutter/models/model.dart';
+import 'package:payment_flutter/pages/packages_carousel.dart';
 import 'package:payment_flutter/pages/payment_history_screen.dart';
 import 'package:payment_flutter/services/payment_service.dart';
 
@@ -29,17 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             const Text(
-              'Selecione o pacote ideal para você',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Deslize para ver os pacotes',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
-            ...PackageRepository.packages.map(
-              (package) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: PackageCard(
-                  package: package,
-                  onPressed: () => _handlePackageSelection(package, context),
-                ),
+            PackagesCarousel(
+              onPackageSelected: (package) => _handlePackageSelection(package, context),
+            ),
+            const SizedBox(height: 30),
+            const Text(
+              'Toque no pacote desejado ou clique em "Assinar"',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
               ),
             ),
           ],
