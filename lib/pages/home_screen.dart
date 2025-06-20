@@ -15,6 +15,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final PaymentService _paymentService = PaymentService();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _paymentService.preloadStripe();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -37,15 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             PackagesCarousel(
-              onPackageSelected: (package) => _handlePackageSelection(package, context),
+              onPackageSelected: (package) =>
+                  _handlePackageSelection(package, context),
             ),
             const SizedBox(height: 30),
             const Text(
               'Toque no pacote desejado ou clique em "Assinar"',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],
         ),
@@ -95,5 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
   ) async {
     await _paymentService.handlePackageSelection(package, context);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _paymentService.preloadStripe();
+    });
   }
 }
