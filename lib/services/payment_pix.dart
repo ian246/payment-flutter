@@ -1,15 +1,16 @@
-
 import 'package:flutter/material.dart';
 import 'package:payment_flutter/data/repository.dart';
 import 'package:payment_flutter/models/model.dart';
+import 'package:payment_flutter/services/payment_store.dart'; // <-- Adicionado
 
 class PaymentPix {
   Map<String, dynamic>? paymentIntent;
 
   Future<void> makePixPayment(
     PaymentPackage package,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -39,7 +40,11 @@ class PaymentPix {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _simulatePixConfirmation(package, context);
+              _simulatePixConfirmation(
+                package,
+                context,
+                onPaymentConfirmed: onPaymentConfirmed,
+              );
             },
             child: const Text('Já paguei'),
           ),
@@ -50,8 +55,9 @@ class PaymentPix {
 
   Future<void> _simulatePixConfirmation(
     PaymentPackage package,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
     await Future.delayed(const Duration(seconds: 3));
 
     final paymentRecord = PaymentRecord(
@@ -65,11 +71,18 @@ class PaymentPix {
 
     PackageRepository.paymentHistory.add(paymentRecord);
 
+    // ✅ Adiciona também ao estado global temporário
+    PaymentStore.addPayment({
+      'tipo': 'PIX',
+      'valor': package.price,
+      'data': DateTime.now().toString(),
+    });
+
     if (context.mounted) {
       _showSuccessDialog(context, 'Pagamento PIX confirmado!');
+      onPaymentConfirmed?.call(); // atualiza histórico se necessário
     }
   }
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -103,12 +116,3 @@ class PaymentPix {
     );
   }
 }
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.receipt_long, color: Colors.orange),
-      title: const Text('Boleto Bancário'),
-      onTap: () => Navigator.pop(context, 'boleto'),
-    );
-  }
-

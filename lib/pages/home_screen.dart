@@ -79,18 +79,16 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.payment),
-            title: const Text('Histórico de Pagamentos'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PaymentHistoryScreen(),
-                ),
-              );
-            },
-          ),
+              title: const Text('Histórico de Pagamentos'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PaymentHistoryScreen(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -100,7 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
     PaymentPackage package,
     BuildContext context,
   ) async {
-    await _paymentService.handlePackageSelection(package, context);
+    await _paymentService.handlePackageSelection(
+      package,
+      context,
+      onPaymentConfirmed: () {},
+    );
   }
 
   @override

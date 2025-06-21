@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -14,81 +13,46 @@ class PaymentCard {
     await Stripe.instance.applySettings();
   }
 
-  Future<void> handlePackageSelection(
-    PaymentPackage package,
-    BuildContext context,
-  ) async {
-    final paymentMethod = await _showPaymentMethodDialog(context);
-    if (paymentMethod == null) return;
-
-    if (paymentMethod == 'card') {
-      await makeCardPayment(package, context);
-    }
-  }
-
-  Future<String?> _showPaymentMethodDialog(BuildContext context) async {
-    return await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Escolha o método de pagamento'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.credit_card, color: Colors.blue),
-              title: const Text('Cartão de Crédito'),
-              onTap: () => Navigator.pop(context, 'card'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code, color: Colors.green),
-              title: const Text('PIX'),
-              onTap: () => Navigator.pop(context, 'pix'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.receipt_long, color: Colors.orange),
-              title: const Text('Boleto Bancário'),
-              onTap: () => Navigator.pop(context, 'boleto'),
-            ),
-          ],
+  Future<void> makeCardPayment(
+  PaymentPackage package,
+  BuildContext context, {
+  VoidCallback? onPaymentConfirmed,
+}) async {
+  try {
+    paymentIntent = await _createPaymentIntent(
+      package.price.toString(),
+      'BRL',
+    );
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        paymentIntentClientSecret: paymentIntent!['client_secret'],
+        merchantDisplayName: package.title,
+        style: Theme.of(context).brightness == Brightness.dark
+            ? ThemeMode.dark
+            : ThemeMode.light,
+        appearance: const PaymentSheetAppearance(
+          colors: PaymentSheetAppearanceColors(
+            primary: Colors.deepPurple,
+            componentBorder: Colors.deepPurple,
+          ),
         ),
       ),
     );
-  }
 
-  Future<void> makeCardPayment(
-    PaymentPackage package,
-    BuildContext context,
-  ) async {
-    try {
-      paymentIntent = await _createPaymentIntent(
-        package.price.toString(),
-        'BRL',
-      );
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntent!['client_secret'],
-          merchantDisplayName: package.title,
-          style: Theme.of(context).brightness == Brightness.dark
-              ? ThemeMode.dark
-              : ThemeMode.light,
-          appearance: const PaymentSheetAppearance(
-            colors: PaymentSheetAppearanceColors(
-              primary: Colors.deepPurple,
-              componentBorder: Colors.deepPurple,
-            ),
-          ),
-        ),
-      );
-
-      await _displayPaymentSheet(package, context);
-    } catch (err) {
-      _showErrorDialog(context, 'Erro no pagamento: $err');
-    }
+    await _displayPaymentSheet(
+      package,
+      context,
+      onPaymentConfirmed: onPaymentConfirmed,
+    );
+  } catch (err) {
+    _showErrorDialog(context, 'Erro no pagamento: $err');
   }
-   Future<void> _displayPaymentSheet(
+}
+  Future<void> _displayPaymentSheet(
     PaymentPackage package,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
     try {
       await Stripe.instance.presentPaymentSheet().then((value) async {
         final paymentRecord = PaymentRecord(
@@ -100,10 +64,11 @@ class PaymentCard {
           paymentMethod: 'card',
         );
 
-        PackageRepository.paymentHistory.add(paymentRecord);
+       PackageRepository.paymentHistory.add(paymentRecord);
 
         if (context.mounted) {
           _showSuccessDialog(context, 'Pagamento realizado com sucesso!');
+          onPaymentConfirmed?.call(); // Chama o callback para atualizar a UI
         }
         paymentIntent = null;
       });
@@ -120,6 +85,7 @@ class PaymentCard {
       }
     }
   }
+
   Future<Map<String, dynamic>> _createPaymentIntent(
     String amount,
     String currency,
@@ -156,7 +122,6 @@ class PaymentCard {
     }
   }
 
- 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -188,6 +153,4 @@ class PaymentCard {
       ),
     );
   }
-
-  
 }
