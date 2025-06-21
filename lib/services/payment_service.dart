@@ -1,52 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:payment_flutter/models/model.dart';
-import 'package:payment_flutter/services/payment_card.dart';
-import 'package:payment_flutter/services/payment_pix.dart';
-import 'package:payment_flutter/services/payment_store.dart';
+import 'package:payment_flutter/models/payment_handler.dart';
+import 'package:payment_flutter/services/add_payment_handler.dart';
+// import 'package:payment_flutter/payment_store.dart';
 
 class PaymentService {
-  final PaymentCard _paymentCard = PaymentCard();
-  final PaymentPix _paymentPix = PaymentPix();
-  Map<String, dynamic>? paymentIntent;
-  Future<void> preloadStripe() async {
-    await Stripe.instance.applySettings();
-  }
-
-  Future<void> handlePackageSelection(
+   final Map<String, PaymentHandler> _paymentHandlers = {
+    'card': CardPaymentHandler(),
+    'pix': PixPaymentHandler(),
+    'boleto': BoletoPaymentHandler(),
+  };
+      Future<void> handlePackageSelection(
     PaymentPackage package,
-    BuildContext context, {
-    VoidCallback? onPaymentConfirmed,
-  }) async {
+    BuildContext context, {required Null Function() onPaymentConfirmed}
+  ) async {
     final paymentMethod = await _showPaymentMethodDialog(context);
     if (paymentMethod == null) return;
-    if (paymentMethod == 'card') {
-      await _paymentCard.makeCardPayment(
-        package,
-        context,
-        onPaymentConfirmed: () {
-          PaymentStore.addPayment({
-            'tipo': 'Cartão',
-            'valor': package.price,
-            'data': DateTime.now().toString(),
-          });
-        },
-      );
-    } else {
-      await _paymentPix.makePixPayment(
-        package,
-        context,
-        onPaymentConfirmed: () {
-          PaymentStore.addPayment({
-            'tipo': 'PIX',
-            'valor': package.price,
-            'data': DateTime.now().toString(),
-          });
-        },
-      );
-    }
+    await _paymentHandlers[paymentMethod]?.makePayment(
+      package,
+      context,
+      onPaymentConfirmed: () {
+        // Callback adicional se necessário
+      },
+    );
   }
-
+  
   Future<String?> _showPaymentMethodDialog(BuildContext context) async {
     return await showDialog<String>(
       context: context,

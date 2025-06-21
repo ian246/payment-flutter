@@ -15,14 +15,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final PaymentService _paymentService = PaymentService();
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _paymentService.preloadStripe();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -79,16 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-              title: const Text('Histórico de Pagamentos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PaymentHistoryScreen(),
-                  ),
-                );
-              },
-            ),
+            leading: const Icon(Icons.payment),
+            title: const Text('Histórico de Pagamentos'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PaymentHistoryScreen()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -105,11 +97,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _paymentService.preloadStripe();
-    });
-  }
+
 }

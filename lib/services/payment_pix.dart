@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payment_flutter/data/repository.dart';
 import 'package:payment_flutter/models/model.dart';
-import 'package:payment_flutter/services/payment_store.dart'; // <-- Adicionado
 
 class PaymentPix {
   Map<String, dynamic>? paymentIntent;
@@ -11,6 +10,8 @@ class PaymentPix {
     BuildContext context, {
     VoidCallback? onPaymentConfirmed,
   }) async {
+    bool paymentWasConfirmed = false;
+
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -39,6 +40,7 @@ class PaymentPix {
         actions: [
           TextButton(
             onPressed: () {
+              paymentWasConfirmed = true;
               Navigator.pop(context);
               _simulatePixConfirmation(
                 package,
@@ -50,7 +52,11 @@ class PaymentPix {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      if (!paymentWasConfirmed && context.mounted) {
+        _showErrorDialog(context, 'Pagamento PIX não foi efetuado!');
+      }
+    });
   }
 
   Future<void> _simulatePixConfirmation(
@@ -58,29 +64,20 @@ class PaymentPix {
     BuildContext context, {
     VoidCallback? onPaymentConfirmed,
   }) async {
-    await Future.delayed(const Duration(seconds: 3));
-
     final paymentRecord = PaymentRecord(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: DateTime.now().toString(),
       title: package.title,
       description: package.description,
       amount: package.price,
       date: DateTime.now(),
       paymentMethod: 'pix',
     );
-
+    
     PackageRepository.paymentHistory.add(paymentRecord);
-
-    // ✅ Adiciona também ao estado global temporário
-    PaymentStore.addPayment({
-      'tipo': 'PIX',
-      'valor': package.price,
-      'data': DateTime.now().toString(),
-    });
-
+    
     if (context.mounted) {
       _showSuccessDialog(context, 'Pagamento PIX confirmado!');
-      onPaymentConfirmed?.call(); // atualiza histórico se necessário
+      onPaymentConfirmed?.call();
     }
   }
 

@@ -14,40 +14,41 @@ class PaymentCard {
   }
 
   Future<void> makeCardPayment(
-  PaymentPackage package,
-  BuildContext context, {
-  VoidCallback? onPaymentConfirmed,
-}) async {
-  try {
-    paymentIntent = await _createPaymentIntent(
-      package.price.toString(),
-      'BRL',
-    );
-    await Stripe.instance.initPaymentSheet(
-      paymentSheetParameters: SetupPaymentSheetParameters(
-        paymentIntentClientSecret: paymentIntent!['client_secret'],
-        merchantDisplayName: package.title,
-        style: Theme.of(context).brightness == Brightness.dark
-            ? ThemeMode.dark
-            : ThemeMode.light,
-        appearance: const PaymentSheetAppearance(
-          colors: PaymentSheetAppearanceColors(
-            primary: Colors.deepPurple,
-            componentBorder: Colors.deepPurple,
+    PaymentPackage package,
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
+    try {
+      paymentIntent = await _createPaymentIntent(
+        package.price.toString(),
+        'BRL',
+      );
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent!['client_secret'],
+          merchantDisplayName: package.title,
+          style: Theme.of(context).brightness == Brightness.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          appearance: const PaymentSheetAppearance(
+            colors: PaymentSheetAppearanceColors(
+              primary: Colors.deepPurple,
+              componentBorder: Colors.deepPurple,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await _displayPaymentSheet(
-      package,
-      context,
-      onPaymentConfirmed: onPaymentConfirmed,
-    );
-  } catch (err) {
-    _showErrorDialog(context, 'Erro no pagamento: $err');
+      await _displayPaymentSheet(
+        package,
+        context,
+        onPaymentConfirmed: onPaymentConfirmed,
+      );
+    } catch (err) {
+      _showErrorDialog(context, 'Erro no pagamento: $err');
+    }
   }
-}
+
   Future<void> _displayPaymentSheet(
     PaymentPackage package,
     BuildContext context, {
@@ -64,7 +65,7 @@ class PaymentCard {
           paymentMethod: 'card',
         );
 
-       PackageRepository.paymentHistory.add(paymentRecord);
+        PackageRepository.paymentHistory.add(paymentRecord);
 
         if (context.mounted) {
           _showSuccessDialog(context, 'Pagamento realizado com sucesso!');

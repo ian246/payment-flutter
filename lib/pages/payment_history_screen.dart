@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payment_flutter/services/payment_store.dart';
 
 class PaymentHistoryScreen extends StatefulWidget {
-  const PaymentHistoryScreen({Key? key}) : super(key: key);
+  const PaymentHistoryScreen({super.key});
 
   @override
   State<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
@@ -19,7 +19,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 
   void _loadPayments() {
     setState(() {
-      payments = PaymentStore.payments;
+      payments = PaymentStore.getAllPayments();
     });
   }
 
@@ -33,10 +33,53 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               itemCount: payments.length,
               itemBuilder: (context, index) {
                 final payment = payments[index];
-                return ListTile(
-                  title: Text('Tipo: ${payment['tipo']}'),
-                  subtitle: Text(
-                    'Valor: R\$ ${payment['valor']} - ${payment['data']}',
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: payment['tipo'] == 'PIX'
+                          ? Colors.green[100]
+                          : Colors.deepPurple[100],
+                      child: Icon(
+                        payment['tipo'] == 'PIX'
+                            ? Icons.pix
+                            : Icons.credit_card,
+                        color: payment['tipo'] == 'PIX'
+                            ? Colors.green
+                            : Colors.deepPurple,
+                      ),
+                    ),
+                    title: Text(
+                      'R\$ ${payment['valor'].toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tipo: ${payment['tipo']}'),
+                        Text(
+                          'Data: ${payment['data']}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing:  Text(
+                          'Hora: ${payment['hora']}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
                   ),
                 );
               },

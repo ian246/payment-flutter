@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  boleto_utils:
+    dependency: "direct main"
+    description:
+      name: boleto_utils
+      sha256: e63225ac330a7ea71eac76ebeb755cb14b0257cdfe55a7dec52a65058f167311
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   boolean_selector:
     dependency: transitive
     description:
