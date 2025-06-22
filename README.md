@@ -1,16 +1,30 @@
-# payment_flutter
+Payment Flutter App
 
-A new Flutter project.
+Aplicativo de pagamentos desenvolvido em Flutter com múltiplos métodos de integração, incluindo Stripe para cartões, PIX e boletos bancários.
+📱 Funcionalidades Principais
 
-## Getting Started
+    Seleção de pacotes com diferentes níveis de serviço
 
-This project is a starting point for a Flutter application.
+    Pagamento por múltiplos métodos:
 
-A few resources to get you started if this is your first Flutter project:
+        💳 Cartão de crédito (via Stripe)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+        📱 PIX (simulado)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+        🏦 Boleto bancário (simulado)
+
+    Histórico de pagamentos persistente
+
+    UI responsiva e animações fluidas
+
+🛠️ Tecnologias Utilizadas
+
+    Flutter 3.19+
+
+    Hive - Armazenamento local rápido e eficiente
+
+    Stripe - Processamento de pagamentos com cartão
+
+    Flutter Dotenv - Gerenciamento de variáveis de ambiente
+
+    Path Provider - Acesso aos diretórios do dispositivo
