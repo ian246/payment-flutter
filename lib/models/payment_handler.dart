@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:payment_flutter/data/repository.dart';
 import 'package:payment_flutter/models/model.dart';
-import 'package:payment_flutter/services/payment_store.dart';
+import 'package:intl/intl.dart';
 
 abstract class PaymentHandler {
   Future<void> makePayment(
@@ -11,32 +10,26 @@ abstract class PaymentHandler {
     VoidCallback? onPaymentConfirmed,
   });
 
-  void recordPayment({
+  Future<void> recordPayment({
     required String paymentMethod,
     required double amount,
+    required PaymentPackage package,
     required VoidCallback onPaymentConfirmed,
-  }) {
+  }) async {
     final now = DateTime.now();
-    final hora = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
-    final data = "${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}";
+    final hora = DateFormat('HH:mm:ss').format(now);
+    final data = DateFormat('dd/MM/yyyy').format(now);
 
     final paymentRecord = PaymentRecord(
-      id: now.toString(),
-      title: '',
-      description: '',
+      id: now.millisecondsSinceEpoch.toString(),
+      title: 'Pagamento $paymentMethod',
+      description: 'Pagamento realizado em $data às $hora',
       amount: amount,
       date: now,
       paymentMethod: paymentMethod,
     );
 
-    PackageRepository.paymentHistory.add(paymentRecord);
-    PaymentStore.addPayment({
-      'tipo': paymentMethod,
-      'valor': amount,
-      'data': data,
-      'hora': hora,
-    });
-
-    onPaymentConfirmed.call();
+       await PackageRepository.addPaymentRecord(paymentRecord);
+    onPaymentConfirmed();
   }
 }

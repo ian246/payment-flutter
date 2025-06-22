@@ -3,55 +3,69 @@ import 'package:payment_flutter/models/payment_handler.dart';
 import 'package:payment_flutter/services/payment_boleto.dart';
 import 'package:payment_flutter/services/payment_card.dart';
 import 'package:payment_flutter/services/payment_pix.dart';
-
-import '../models/model.dart';
+import 'package:payment_flutter/models/model.dart';
 
 class CardPaymentHandler extends PaymentHandler {
-  final PaymentCard _paymentCard = PaymentCard();
+  final CardPaymentHandlerService _handler = CardPaymentHandlerService();
 
   @override
-  Future<void> makePayment(PaymentPackage package, BuildContext context, {VoidCallback? onPaymentConfirmed}) async {
-    await _paymentCard.makeCardPayment(
+  Future<void> makePayment(
+    PaymentPackage package,
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
+    await _handler.makeCardPayment(
       package,
       context,
       onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'Cartão',
+        paymentMethod: 'card',
+        package: package,
         amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed?? (){},
+        onPaymentConfirmed: onPaymentConfirmed ?? () {},
       ),
     );
   }
 }
 
 class PixPaymentHandler extends PaymentHandler {
-  final PaymentPix _paymentPix = PaymentPix();
+  final PixPaymentHandlerService _handler = PixPaymentHandlerService();
 
   @override
-  Future<void> makePayment(PaymentPackage package, BuildContext context, {VoidCallback? onPaymentConfirmed}) async {
-    await _paymentPix.makePixPayment(
+  Future<void> makePayment(
+    PaymentPackage package,
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
+    await _handler.makePixPayment(
       package,
       context,
       onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'PIX',
+        paymentMethod: 'pix',
+        package: package,
         amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed?? (){},
+        onPaymentConfirmed: onPaymentConfirmed ?? () {},
       ),
     );
   }
 }
 
 class BoletoPaymentHandler extends PaymentHandler {
-  final PaymentBoleto _paymentBoleto = PaymentBoleto();
+  final BoletoPaymentHandlerService _handler = BoletoPaymentHandlerService();
 
   @override
-  Future<void> makePayment(PaymentPackage package, BuildContext context, {VoidCallback? onPaymentConfirmed}) async {
-    await _paymentBoleto.makeBoletoPayment(
+  Future<void> makePayment(
+    PaymentPackage package,
+    BuildContext context, {
+    VoidCallback? onPaymentConfirmed,
+  }) async {
+    await _handler.makeBoletoPayment(
       package,
       context,
       onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'Boleto',
+        paymentMethod: 'boleto',
+        package: package,
         amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed?? (){},
+        onPaymentConfirmed: onPaymentConfirmed ?? () {},
       ),
     );
   }

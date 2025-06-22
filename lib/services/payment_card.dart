@@ -1,17 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'package:payment_flutter/data/repository.dart';
 import 'package:payment_flutter/models/model.dart';
 
-class PaymentCard {
-  Map<String, dynamic>? paymentIntent;
+part 'payment_card.g.dart';
 
-  Future<void> preloadStripe() async {
-    await Stripe.instance.applySettings();
-  }
+@HiveType(typeId: 1)
+class CardPaymentService extends HiveObject {
+  @HiveField(0)
+  String last4Digits;
+
+  CardPaymentService({required this.last4Digits});
+}
+
+class CardPaymentHandlerService {
+  Map<String, dynamic>? paymentIntent;
 
   Future<void> makeCardPayment(
     PaymentPackage package,
@@ -23,6 +30,7 @@ class PaymentCard {
         package.price.toString(),
         'BRL',
       );
+
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: paymentIntent!['client_secret'],
@@ -39,11 +47,7 @@ class PaymentCard {
         ),
       );
 
-      await _displayPaymentSheet(
-        package,
-        context,
-        onPaymentConfirmed: onPaymentConfirmed,
-      );
+      await _displayPaymentSheet(package, context, onPaymentConfirmed);
     } catch (err) {
       _showErrorDialog(context, 'Erro no pagamento: $err');
     }
@@ -51,35 +55,33 @@ class PaymentCard {
 
   Future<void> _displayPaymentSheet(
     PaymentPackage package,
-    BuildContext context, {
+    BuildContext context,
     VoidCallback? onPaymentConfirmed,
-  }) async {
+  ) async {
     try {
-      await Stripe.instance.presentPaymentSheet().then((value) async {
-        final paymentRecord = PaymentRecord(
-          id: paymentIntent!['id'],
-          title: package.title,
-          description: package.description,
-          amount: package.price,
-          date: DateTime.now(),
-          paymentMethod: 'card',
-        );
+      await Stripe.instance.presentPaymentSheet();
 
-        PackageRepository.paymentHistory.add(paymentRecord);
+      final paymentRecord = PaymentRecord(
+        id: paymentIntent!['id'],
+        title: package.title,
+        description: package.description,
+        amount: package.price,
+        date: DateTime.now(),
+        paymentMethod: 'card',
+      );
 
-        if (context.mounted) {
-          _showSuccessDialog(context, 'Pagamento realizado com sucesso!');
-          onPaymentConfirmed?.call(); // Chama o callback para atualizar a UI
-        }
-        paymentIntent = null;
-      });
-    } on StripeException catch (err) {
+      await PackageRepository.addPaymentRecord(paymentRecord);
+
+      final cardData = CardPaymentService(last4Digits: '1234');
+      final box = await Hive.openBox<CardPaymentService>('card_payments');
+      await box.add(cardData);
+
       if (context.mounted) {
-        _showErrorDialog(
-          context,
-          'Erro no pagamento: ${err.error.localizedMessage}',
-        );
+        _showSuccessDialog(context, 'Pagamento realizado com sucesso!');
+        onPaymentConfirmed?.call();
       }
+
+      paymentIntent = null;
     } catch (e) {
       if (context.mounted) {
         _showErrorDialog(context, 'Erro: $e');
@@ -94,33 +96,23 @@ class PaymentCard {
     final secretKey = dotenv.env['STRIPE_SECRET_KEY'];
     final baseurl = dotenv.env['DATABASE_URL'];
 
-    if (baseurl == null) {
-      throw Exception('URL incorreta');
-    }
+    if (baseurl == null) throw Exception('URL incorreta');
 
-    String calculateAmount(String amount) {
-      final calculatedAmount = (double.parse(amount)) * 100;
-      return calculatedAmount.toStringAsFixed(0);
-    }
-
-    Map<String, dynamic> body = {
-      'amount': calculateAmount(amount),
+    final body = {
+      'amount': (double.parse(amount) * 100).toInt().toString(),
       'currency': currency,
     };
 
-    try {
-      var response = await http.post(
-        Uri.parse(baseurl),
-        headers: {
-          'Authorization': 'Bearer $secretKey',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body,
-      );
-      return json.decode(response.body);
-    } catch (err) {
-      throw Exception(err.toString());
-    }
+    final response = await http.post(
+      Uri.parse(baseurl),
+      headers: {
+        'Authorization': 'Bearer $secretKey',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+
+    return json.decode(response.body);
   }
 
   void _showErrorDialog(BuildContext context, String message) {

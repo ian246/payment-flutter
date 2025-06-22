@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:payment_flutter/models/model.dart';
 import 'package:payment_flutter/data/repository.dart';
 
-class PaymentBoleto {
+part 'payment_boleto.g.dart';
+
+@HiveType(typeId: 2)
+class BoletoPaymentService extends HiveObject {
+  @HiveField(0)
+  String codigoDeBarras;
+
+  BoletoPaymentService({required this.codigoDeBarras});
+}
+
+class BoletoPaymentHandlerService {
   Future<void> makeBoletoPayment(
     PaymentPackage package,
     BuildContext context, {
@@ -46,11 +57,11 @@ class PaymentBoleto {
     });
   }
 
-  void _simulateBoletoConfirmation(
+  Future<void> _simulateBoletoConfirmation(
     PaymentPackage package,
     BuildContext context,
     VoidCallback? onPaymentConfirmed,
-  ) {
+  ) async {
     final paymentRecord = PaymentRecord(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: package.title,
@@ -60,7 +71,14 @@ class PaymentBoleto {
       paymentMethod: 'boleto',
     );
 
-    PackageRepository.paymentHistory.add(paymentRecord);
+    await PackageRepository.addPaymentRecord(paymentRecord);
+
+    final boletoData = BoletoPaymentService(
+      codigoDeBarras: '00190.00009 01234.567890 12345.678901 2 12340000010000',
+    );
+
+    final box = await Hive.openBox<BoletoPaymentService>('boleto_payments');
+    await box.add(boletoData);
 
     if (context.mounted) {
       _showSuccessDialog(context, 'Pagamento via Boleto confirmado!');

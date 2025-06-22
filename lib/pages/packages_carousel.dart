@@ -14,6 +14,8 @@ class PackagesCarousel extends StatefulWidget {
 
 class _PackagesCarousel extends State<PackagesCarousel> {
   final PageController _pageController = PageController(viewportFraction: 0.85);
+  final packages = PackageRepository.getAllPackages();
+
   int _currentPage = 0;
 
   @override
@@ -40,9 +42,9 @@ class _PackagesCarousel extends State<PackagesCarousel> {
           height: 320, // Altura ajustável conforme necessidade
           child: PageView.builder(
             controller: _pageController,
-            itemCount: PackageRepository.packages.length,
+            itemCount: packages.length,
             itemBuilder: (context, index) {
-              final package = PackageRepository.packages[index];
+              final package = packages[index];
               return AnimatedBuilder(
                 animation: _pageController,
                 builder: (context, child) {
@@ -52,10 +54,7 @@ class _PackagesCarousel extends State<PackagesCarousel> {
                     value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
                   }
                   return Center(
-                    child: Transform.scale(
-                      scale: value,
-                      child: child,
-                    ),
+                    child: Transform.scale(scale: value, child: child),
                   );
                 },
                 child: GestureDetector(
@@ -74,16 +73,16 @@ class _PackagesCarousel extends State<PackagesCarousel> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
-            PackageRepository.packages.length,
+            packages.length,
             (index) => Container(
               width: 10,
               height: 10,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _currentPage == index 
-                  ? Colors.deepPurple 
-                  : Colors.grey.withValues(alpha: 0.5),
+                color: _currentPage == index
+                    ? Colors.deepPurple
+                    : Colors.grey.withAlpha(100),
               ),
             ),
           ),

@@ -5,16 +5,12 @@ class PackageRepository {
   static Box<PaymentPackage> get packagesBox => Hive.box<PaymentPackage>('packages');
   static Box<PaymentRecord> get paymentsBox => Hive.box<PaymentRecord>('payments');
 
+  static List<PaymentPackage> get packages => packagesBox.values.toList();
+
+  static List<PaymentRecord> get paymentHistory => paymentsBox.values.toList();
+
   static Future<void> addPaymentRecord(PaymentRecord record) async {
-    await paymentsBox.put(record.id, record); // Usando put com ID único
-  }
-
-  static List<PaymentPackage> getAllPackages() {
-    return packagesBox.values.toList();
-  }
-
-  static List<PaymentRecord> getAllPayments() {
-    return paymentsBox.values.toList().reversed.toList(); // Já retorna em ordem reversa
+    await paymentsBox.add(record);
   }
 
   static Future<void> clearAll() async {
