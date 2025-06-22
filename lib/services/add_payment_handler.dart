@@ -17,12 +17,7 @@ class CardPaymentHandler extends PaymentHandler {
     await _handler.makeCardPayment(
       package,
       context,
-      onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'card',
-        package: package,
-        amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed ?? () {},
-      ),
+      onPaymentConfirmed: onPaymentConfirmed
     );
   }
 }
@@ -39,12 +34,7 @@ class PixPaymentHandler extends PaymentHandler {
     await _handler.makePixPayment(
       package,
       context,
-      onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'pix',
-        package: package,
-        amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed ?? () {},
-      ),
+      onPaymentConfirmed: onPaymentConfirmed,
     );
   }
 }
@@ -61,12 +51,7 @@ class BoletoPaymentHandler extends PaymentHandler {
     await _handler.makeBoletoPayment(
       package,
       context,
-      onPaymentConfirmed: () => recordPayment(
-        paymentMethod: 'boleto',
-        package: package,
-        amount: package.price,
-        onPaymentConfirmed: onPaymentConfirmed ?? () {},
-      ),
+      onPaymentConfirmed: onPaymentConfirmed
     );
   }
 }

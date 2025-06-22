@@ -14,19 +14,20 @@ class PaymentHistoryScreen extends StatelessWidget {
       body: ValueListenableBuilder<Box<PaymentRecord>>(
         valueListenable: PackageRepository.paymentsBox.listenable(),
         builder: (context, box, _) {
-          final payments = box.values.toList();
-          
+          final payments = box.values.toList()
+            ..sort((a, b) => b.date.compareTo(a.date)); // Mais recente primeiro
+
           if (payments.isEmpty) {
             return const Center(child: Text('Nenhum pagamento encontrado.'));
           }
-          
+
           return ListView.builder(
             itemCount: payments.length,
             itemBuilder: (context, index) {
-              final payment = payments.reversed.toList()[index];
+              final payment = payments[index];
               final date = DateFormat('dd/MM/yyyy').format(payment.date);
               final time = DateFormat('HH:mm:ss').format(payment.date);
-              
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 elevation: 2,
