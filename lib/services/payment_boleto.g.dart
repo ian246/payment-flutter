@@ -8,7 +8,7 @@ part of 'payment_boleto.dart';
 
 class BoletoPaymentServiceAdapter extends TypeAdapter<BoletoPaymentService> {
   @override
-  final int typeId = 2;
+  final int typeId = 5;
 
   @override
   BoletoPaymentService read(BinaryReader reader) {

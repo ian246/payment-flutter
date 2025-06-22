@@ -8,7 +8,7 @@ part of 'payment_pix.dart';
 
 class PixPaymentServiceAdapter extends TypeAdapter<PixPaymentService> {
   @override
-  final int typeId = 0;
+  final int typeId = 4;
 
   @override
   PixPaymentService read(BinaryReader reader) {

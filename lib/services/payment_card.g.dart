@@ -8,7 +8,7 @@ part of 'payment_card.dart';
 
 class CardPaymentServiceAdapter extends TypeAdapter<CardPaymentService> {
   @override
-  final int typeId = 1;
+  final int typeId = 3;
 
   @override
   CardPaymentService read(BinaryReader reader) {
